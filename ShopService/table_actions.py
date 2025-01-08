@@ -64,12 +64,12 @@ def get_user_by_email(email:str):
             return None
 
 
-def authenticate_user(email: str, password: str):
+def authenticate_user(username: str, password: str):
     with Session(engine) as session:
-        user = session.query(User).filter(User.email == email).first()
+        user = session.query(User).filter(User.username == username).first()
         if not user:
             return False
-        if not verify_password(password, user.hashed_password):
+        if not verify_password(password, user.password):
             return False
         return user
 
