@@ -32,7 +32,7 @@ def create_table():
             session.commit()
 
 
-def add_user(username: str, email: str, password: str, role:str):
+def add_user(username: str, email: str, password: str, role: str):
     """
     Добавление пользователя в таблицу пользователей
     """
@@ -51,7 +51,16 @@ def get_all_users():
         return users
 
 
-def get_user_by_email(email:str):
+def get_user(id: int):
+    with Session(engine) as session:
+        user = session.query(User).filter(User.id == id).first()
+        if user:
+            return user
+        else:
+            return None
+
+
+def get_user_by_email(email: str):
     """
     Ищет пользователя по email
     """
@@ -82,17 +91,6 @@ def update_email(user_id: int, new_email: str):
         if user:
             user.email = new_email
             session.commit()
-
-
-# def delete_yourself(user_id: int):
-#     """
-#     Удаляет пользователя по id
-#     """
-#     with Session(engine) as session:
-#         user = session.query(User).filter(User.id == user_id).first()
-#         if user:
-#             session.delete(user)
-#             session.commit()
 
 
 def delete_user(user_id: int):
