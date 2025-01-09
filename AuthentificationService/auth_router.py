@@ -6,6 +6,7 @@ from datetime import timedelta
 from typing import Annotated
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from pydantic import EmailStr
 
 class Token(BaseModel):
     access_token: str
@@ -14,7 +15,7 @@ class Token(BaseModel):
 router = APIRouter(prefix='/users', tags=['users'])
 
 @router.post("/register")
-async def create_user(username: str, email: str, password: str):
+async def create_user(username: str, email: EmailStr, password: str):
     create_table()
     try_find_user = get_user_by_email(email)
     print(try_find_user)

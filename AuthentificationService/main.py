@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from token_actions import create_access_token, get_current_user, get_user_if_admin
 from auth_router import router as auth_router
 from table_actions import delete_user, get_all_users, update_email, get_user
+from pydantic import EmailStr
 
 app = FastAPI()
 
@@ -13,7 +14,7 @@ admin_dependency = Annotated[dict, Depends(get_user_if_admin)]
 
 
 @app.post("/update_user_email", status_code=status.HTTP_200_OK)
-async def update_user_info(user: user_dependency, new_email: str):
+async def update_user_info(user: user_dependency, new_email: EmailStr):
     if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
     else:

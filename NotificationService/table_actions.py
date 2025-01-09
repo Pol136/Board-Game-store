@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, inspect
 from sqlalchemy.orm import Session
-
+from password_actions import verify_password, hash_password
 from models import Base, User
 
 load_dotenv()
@@ -27,17 +27,17 @@ def create_table():
         Base.metadata.create_all(engine)
 
         with Session(engine) as session:
-            new_user = User(username='admin', email='admin@admin', role='admin')
+            new_user = User(username='admin', email='admin@admin', role='admin', password=hash_password('admin'))
             session.add(new_user)
             session.commit()
 
 
-def add_user(username: str, email: str, role:str):
+def add_user(username: str, email: str, role:str, password:str):
     """
     Добавление пользователя в таблицу пользователей
     """
     with Session(engine) as session:
-        new_user = User(username=username, email=email, role=role)
+        new_user = User(username=username, email=email, role=role, password=hash_password(password))
         session.add(new_user)
         session.commit()
 
@@ -63,10 +63,12 @@ def get_user_by_email(email:str):
             return None
 
 
-def authenticate_user(email: str):
+def authenticate_user(username: str, password: str):
     with Session(engine) as session:
-        user = session.query(User).filter(User.email == email).first()
+        user = session.query(User).filter(User.username == username).first()
         if not user:
+            return False
+        if not verify_password(password, user.password):
             return False
         return user
 
