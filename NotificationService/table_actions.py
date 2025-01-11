@@ -27,17 +27,33 @@ def create_table():
         Base.metadata.create_all(engine)
 
         with Session(engine) as session:
-            new_user = User(username='admin', email='admin@admin', role='admin', password=hash_password('admin'))
+            new_user = User(username='admin', email='admin@admin', role='admin')
             session.add(new_user)
             session.commit()
 
 
-def add_user(username: str, email: str, role:str, password:str):
+def update_email_by_name(username: str, new_email: str):
+    with Session(engine) as session:
+        user = session.query(User).filter(User.username == username).first()
+        if user:
+            user.email = new_email
+            session.commit()
+
+
+def delete_user_by_email(email: str):
+    with Session(engine) as session:
+        user = session.query(User).filter(User.email ==email).first()
+        if user:
+            session.delete(user)
+            session.commit()
+
+
+def add_user(username: str, email: str, role:str):
     """
     Добавление пользователя в таблицу пользователей
     """
     with Session(engine) as session:
-        new_user = User(username=username, email=email, role=role, password=hash_password(password))
+        new_user = User(username=username, email=email, role=role)
         session.add(new_user)
         session.commit()
 

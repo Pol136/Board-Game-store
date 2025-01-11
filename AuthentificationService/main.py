@@ -1,8 +1,6 @@
 from typing import Annotated
-from fastapi import FastAPI, HTTPException, Depends, status, Request
-from starlette.responses import Response
-
-from token_actions import create_access_token, get_current_user, get_user_if_admin
+from fastapi import FastAPI, HTTPException, Depends, status, Request, Response
+from token_actions import create_access_token, get_current_user
 from auth_router import router as auth_router
 from table_actions import delete_user, get_all_users, update_email, get_user, create_table
 from pydantic import EmailStr
@@ -72,4 +70,5 @@ async def logout_user(request: Request, response: Response):
         response.set_cookie(
             key=SESSION_COOKIE_NAME, value='', httponly=True, samesite="lax"
         )
+        send_message('users_operations', f"logged_out")
         return "Your token was deleted"

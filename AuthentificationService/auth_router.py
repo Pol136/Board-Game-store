@@ -41,6 +41,7 @@ async def login_for_access_token(response: Response, form_data: Annotated[OAuth2
     response.set_cookie(
         key=SESSION_COOKIE_NAME, value=token, httponly=True, samesite="lax"  # Устанавливаем cookie
     )
+    send_message('users_operations', f"logged_in {token}")
     return {'access_token': token, 'token_type': 'bearer'}
 
 
