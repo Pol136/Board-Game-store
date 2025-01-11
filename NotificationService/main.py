@@ -6,11 +6,8 @@ from table_actions import get_all_users, create_table, authenticate_user, add_us
 from datetime import timedelta
 from pydantic import BaseModel
 from token_actions import create_access_token, get_user_if_admin
-
-order_status = {'create': 'Ваш заказ создан',
-                'delivered': 'Ваш заказ доставлен в магазин',
-                'received': 'Заказ получен\nСпасибо за покупку!',
-                'cancelled': 'Ваш заказ был отменен'}
+import threading
+from kafka_consumer import consume_kafka
 
 app = FastAPI()
 
@@ -19,27 +16,10 @@ create_table()
 
 admin_dependency = Annotated[dict, Depends(get_user_if_admin)]
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
 
-
-@app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()]):
-    user = authenticate_user(form_data.username, form_data.password)
-    if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate user")
-
-    token = create_access_token(user.id, user.username, user.email, user.role, timedelta(minutes=30))
-    return {'access_token': token, 'token_type': 'bearer'}
-
-
-@app.get("/users")
-async def get_users(admin: admin_dependency):
-    if admin is None:
-        raise HTTPException(status_code=401, detail="Authentication Failed")
-    else:
-        return get_all_users()
+@app.on_event("startup")
+async def startup_event():
+    threading.Thread(target=consume_kafka, daemon=True).start()
 
 
 @app.post("/selective_mailing")
