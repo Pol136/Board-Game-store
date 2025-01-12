@@ -11,6 +11,6 @@ def send_message(topic, value):
     try:
         producer.produce(topic, value=value)
         producer.flush()
-        print(f"status Message sent {value}")
+        print(f"status Message sent {topic} {value}")
     except Exception as e:
         print(str(e))

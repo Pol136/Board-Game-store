@@ -37,15 +37,15 @@ class OrderResponse(BaseModel):
 
 
 @router.post("/", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
-async def create_new_order(user_id: int, order: OrderCreate):
+async def create_new_order(order: OrderCreate):
     token = read_string_from_file('token.txt')
     user = get_current_user(token)
-    if user in None:
+    if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
     else:
-        new_order = create_order(user_id=user_id, game_ids=order.game_ids)
+        new_order = create_order(user_id=user['user_id'], game_ids=order.game_ids)
         if new_order:
-            send_message('orders_operations', f"create {get_user(user_id).username} {get_user(user_id).email}")
+            send_message('orders_operations', f"create {user['username']} {user['email']}")
             return new_order
         else:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to create order")
@@ -56,6 +56,7 @@ async def delete_existing_order(order_id: int):
     token = read_string_from_file('token.txt')
     user = get_current_user(token)
     if user and user['role'] == 'admin':
+        send_message('orders_operations', f"cancelled {user['username']} {user['email']}")
         deleted = delete_order(order_id=order_id)
         if not deleted:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -70,6 +71,7 @@ async def update_existing_order(order_id: int, order: OrderUpdate):
     if user and user['role'] == 'admin':
         updated_order = update_order_status(order_id=order_id, status=order.status)
         if updated_order:
+            send_message('orders_operations', f"{order.status} {user['username']} {user['email']}")
             return updated_order
         else:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
@@ -95,7 +97,7 @@ async def get_all_existing_orders():
 async def get_order_by_id_handler(order_id: int):
     token = read_string_from_file('token.txt')
     user = get_current_user(token)
-    if user in None:
+    if user is None:
         raise HTTPException(status_code=401, detail="Authentication Failed")
     else:
         order = get_order_by_id(order_id=order_id)

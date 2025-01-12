@@ -1,7 +1,7 @@
 from confluent_kafka import Consumer, KafkaError
 from send_email import send_email
 from string_operations import write_string_to_file
-from table_actions import  add_user, delete_user_by_email, update_email_by_name
+from table_actions import add_user, delete_user_by_email, update_email_by_name
 
 order_status = {'create': 'Ваш заказ создан',
                 'delivered': 'Ваш заказ доставлен в магазин',
@@ -35,15 +35,14 @@ def process_message(message):
             write_string_to_file('token.txt', "")
     else:
         order_info = message.value().decode('utf-8').split(' ')
-        text = f"Здравствуйте, {order_info[1]}\n{order_status[order_info[0]]}"
+        text = f"Здравствуйте, {order_info[1]} {order_status[order_info[0]]}"
         send_email("Статус вашего заказа изменен", text, order_info[2])
 
 
 def consume_kafka():
-    consumer.subscribe(topics)
     try:
         while True:
-            msg = consumer.poll(0.001)
+            msg = consumer.poll(0.1)
 
             if msg is None:
                 continue
