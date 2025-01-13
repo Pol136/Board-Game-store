@@ -6,7 +6,7 @@ from email.mime.multipart import MIMEMultipart
 
 load_dotenv()
 smtp_server = os.getenv("SMTP_SERVER")
-smtp_port = os.getenv("SMTP_PORT")
+smtp_port = int(os.getenv("SMTP_PORT"))
 from_email = os.getenv("EMAIL_SENDER")
 mail_password = os.getenv("MAIL_PASSWORD")
 
@@ -24,7 +24,7 @@ def send_email(subject, body, to_email: list):
         server.starttls()
         server.login(from_email, mail_password)
         server.send_message(msg)
-        print("Email sent successfully!")
+        print("Email sent successfully!", ','.join(to_email))
     except Exception as e:
         print(f"Error: {e}")
     finally:

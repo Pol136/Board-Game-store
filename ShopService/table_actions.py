@@ -18,9 +18,6 @@ engine = create_engine(f"postgresql://{db_user}:{db_password}@{db_host}:{db_port
 
 
 def create_table():
-    """
-    Создание таблиц (если их еще нет в базе данных)
-    """
     inspector = inspect(engine)
 
     has_users_table = 'users' in inspector.get_table_names()
@@ -198,6 +195,18 @@ def delete_order(order_id: int) -> bool:
     except SQLAlchemyError as e:
         print(f"Error deleting order: {e}")
         return False
+
+
+def get_user_by_order_id(order_id: int):
+    try:
+        with Session(engine) as session:
+            order = session.query(Order).filter(Order.id == order_id).first()
+            if order:
+                user_id = order.user_id
+                return get_user(user_id)
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
 
 
 def update_order_status(order_id: int, status: str) -> Dict | None:

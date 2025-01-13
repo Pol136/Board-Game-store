@@ -20,23 +20,40 @@ consumer.subscribe(topics)
 
 
 def process_message(message):
-    if message.topic == 'users_operations':
-        user_info = message.value().decode('utf-8').split(' ')
+    user_info = message.value().decode('utf-8').split(' ')
+    print(user_info)
+    if len(user_info) == 4:
         if user_info[0] == 'add_user':
             add_user(user_info[1], user_info[2], user_info[3])
         elif user_info[0] == 'delete_user':
             delete_user_by_email(user_info[2])
         elif user_info[0] == 'update_user_email':
             update_email_by_name(user_info[1], user_info[2])
-        elif user_info[0] == 'logged_in':
-            print(user_info[1])
-            write_string_to_file('token.txt', user_info[1])
-        elif user_info[0] == 'logged_out':
-            write_string_to_file('token.txt', "")
+    elif len(user_info) == 2 and user_info[0] == 'logged_in':
+        write_string_to_file('token.txt', user_info[1])
+    elif len(user_info) == 1 and user_info[0] == 'logged_out':
+        write_string_to_file('token.txt', "")
     else:
-        order_info = message.value().decode('utf-8').split(' ')
-        text = f"Здравствуйте, {order_info[1]} {order_status[order_info[0]]}"
-        send_email("Статус вашего заказа изменен", text, order_info[2])
+        text = f"Здравствуйте, {user_info[1]}\n{order_status[user_info[0]]}"
+        send_email(subject="Статус вашего заказа изменен", body=text, to_email=[user_info[2]])
+
+    # if message.topic == 'users_operations':
+    #     user_info = message.value().decode('utf-8').split(' ')
+    #     if user_info[0] == 'add_user':
+    #         add_user(user_info[1], user_info[2], user_info[3])
+    #     elif user_info[0] == 'delete_user':
+    #         delete_user_by_email(user_info[2])
+    #     elif user_info[0] == 'update_user_email':
+    #         update_email_by_name(user_info[1], user_info[2])
+    #     elif user_info[0] == 'logged_in':
+    #         print(user_info[1])
+    #         write_string_to_file('token.txt', user_info[1])
+    #     elif user_info[0] == 'logged_out':
+    #         write_string_to_file('token.txt', "")
+    # else:
+    #     order_info = message.value().decode('utf-8').split(' ')
+    #     text = f"Здравствуйте, {order_info[1]}\n{order_status[order_info[0]]}"
+    #     send_email(subject="Статус вашего заказа изменен", body=text, to_email=[order_info[2]])
 
 
 def consume_kafka():
